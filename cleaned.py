@@ -42,7 +42,7 @@ class ImageRater:
         self.idx = 0
         self.records = []
 
-        self.current_scores = {dim: 3 for dim in self.SCALES}
+        self.current_scores = {dim: -1 for dim in self.SCALES}
 
         self.fig = plt.figure(
             figsize=(8, 10),
@@ -110,7 +110,6 @@ class ImageRater:
 
         plt.draw()
 
-
     def on_next(self, _):
         category, fname = self.images[self.idx]
         pose = fname.stem.replace("blurred_", "")
@@ -124,10 +123,13 @@ class ImageRater:
                 "Score": score
             })
 
+        if any(score < 0 for score in self.current_scores.values()):
+            return
+
         self.idx += 1
 
         if self.idx < len(self.images):
-            self.current_scores = {dim: 3 for dim in self.current_scores}
+            self.current_scores = {dim: -1 for dim in self.current_scores}
             self.update_display()
 
         else:
