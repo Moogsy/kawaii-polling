@@ -58,18 +58,21 @@ class ImageRater:
             ax_label = self.fig.add_subplot(gs[si+1, 0])
             # Determine definition text
             if scale == "Warmth":
+                title = "This pose is warm"
                 definition = (
                     "Degree of perceived emotional warmth, trust, and friendliness."
                 )
             elif scale == "Expressiveness":
+                title = "This pose is expressive"
                 definition = (
-                    "Intensity and clarity of emotional expression through facial features or body language."
+                    "Intensity and clarity of emotional expression"
                 )
             else:  # Kawaii
-                definition = "(Left up to interpretation)"
+                title = "This pose is kawaii"
+                definition = "Left up to interpretation"
             # Draw bold label and definition separately
             ax_label.text(
-                0.5, 0.65, scale,
+                0.5, 0.65, title,
                 ha="center", va="center",
                 fontsize=10, fontweight="bold"
             )
@@ -124,7 +127,7 @@ class ImageRater:
         img = mpimg.imread(get_image_root() / category / filepath)
         self.ax_img.imshow(img)
         self.ax_img.axis("off")
-        title = f"{self.idx+1}/{len(self.images)} — {category.stem} | {filepath.stem}"
+        title = f"{self.idx+1}/{len(self.images)} — {category.stem}"
         self.ax_img.set_title(title)
         for blist in self.buttons.values():
             for btn in blist:
