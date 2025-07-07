@@ -5,25 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rate the Image</title>
   <style>
+    :root {
+      /* Fallback --vh unit for mobile browsers’ address bar behavior */
+      --vh: 1vh;
+    }
     html, body {
       margin: 0;
       padding: 0;
-      height: 100vh;
+      height: calc(var(--vh, 1vh) * 100);
       font-family: Arial, sans-serif;
       box-sizing: border-box;
-      overflow: hidden; /* hide overflow for the viewport */
+      overflow: hidden;
     }
-
     .container {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100%;
       width: 100%;
     }
-
-    /* Top half: image area fills exactly 50% of viewport */
     .top {
-      height: 50vh;
+      height: calc(var(--vh, 1vh) * 50);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -35,29 +36,19 @@
       max-width: 100%;
       object-fit: contain;
     }
-
-    /* Bottom half: form + button area fills remaining 50% */
     .bottom {
-      height: 50vh;
+      height: calc(var(--vh, 1vh) * 50);
       display: flex;
       flex-direction: column;
     }
-
-    /* Scrollable form occupies most of bottom half */
     .form-scroll {
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding: 8px;
     }
-    .scale-section {
-      margin-bottom: 12px;
-    }
-    .scale-label {
-      font-weight: bold;
-      margin-bottom: 6px;
-      display: block;
-    }
+    .scale-section { margin-bottom: 12px; }
+    .scale-label { font-weight: bold; margin-bottom: 6px; display: block; }
     .likert-row {
       display: flex;
       justify-content: space-between;
@@ -65,11 +56,7 @@
       gap: 6px;
       font-size: 0.9rem;
     }
-    .likert-row label {
-      white-space: nowrap;
-    }
-
-    /* Next button at bottom of bottom half */
+    .likert-row label { white-space: nowrap; }
     .button-container {
       flex: 0 0 auto;
       text-align: center;
@@ -77,19 +64,14 @@
       padding: 8px 0;
       background: #fff;
     }
-    .button-container button {
-      padding: 8px 16px;
-      font-size: 1rem;
-    }
+    .button-container button { padding: 8px 16px; font-size: 1rem; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="top">
-      <!-- Image occupies top half -->
       <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
     </div>
-
     <div class="bottom">
       <div class="form-scroll">
         <h2 style="text-align:center; margin:4px 0; font-size:1.1rem;">Image {{ index }} of {{ total }}</h2>
@@ -99,10 +81,7 @@
               <span class="scale-label">{{ scale }}</span>
               <div class="likert-row">
                 {% for label in likert %}
-                  <label>
-                    <input type="radio" name="{{ scale }}" value="{{ loop.index }}" required>
-                    {{ label }}
-                  </label>
+                  <label><input type="radio" name="{{ scale }}" value="{{ loop.index }}" required> {{ label }}</label>
                 {% endfor %}
               </div>
             </div>
@@ -114,6 +93,14 @@
       </div>
     </div>
   </div>
+  <script>
+    // Adjust --vh custom property to account for mobile address bar
+    function setVh() {
+      document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+  </script>
 </body>
 </html>
 
