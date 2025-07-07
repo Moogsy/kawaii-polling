@@ -127,7 +127,9 @@ class ImageRater:
         img = mpimg.imread(get_image_root() / category / filepath)
         self.ax_img.imshow(img)
         self.ax_img.axis("off")
-        title = f"{self.idx+1}/{len(self.images)} — {category.stem}"
+
+        percentage = 100 * (self.idx + 1) / len(self.images)
+        title = f"{percentage:.2f}% — {category.stem}"
         self.ax_img.set_title(title)
         for blist in self.buttons.values():
             for btn in blist:

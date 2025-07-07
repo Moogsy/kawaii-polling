@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rate the Image</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      box-sizing: border-box;
+      overflow: hidden; /* Prevents any scrolling */
+    }
+
+    .container {
+      display: grid;
+      grid-template-rows: auto 55vh 1fr auto;
+      height: 100vh;
+      padding: 10px;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .image-container img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      /* border: 1px solid #ccc; */
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 5px;
+    }
+
+    .scale-section {
+      margin-bottom: 10px;
+    }
+
+    .scale-label {
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin-bottom: 5px;
+    }
+
+    .likert-row {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+
+    .likert-row label {
+      white-space: nowrap;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 1rem;
+      align-self: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Image {{ index }} of {{ total }}</h2>
+
+    <div class="image-container">
+      <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
+    </div>
+
+    <form method="POST" action="{{ url_for('submit') }}">
+      {% for scale in scales %}
+        <div class="scale-section">
+          <div class="scale-label">{{ scale }}</div>
+          <div class="likert-row">
+            {% for label in likert %}
+              <label>
+                <input type="radio" name="{{ scale }}" value="{{ loop.index }}" required>
+                {{ label }}
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+      <button type="submit">Next</button>
+    </form>
+  </div>
+</body>
+</html>
+

@@ -19,10 +19,14 @@ def get_image_root() -> Path:
 
 
 def get_image_list() -> list[tuple[Path, Path]]:
+
+    all_images = set()
+
     root = get_image_root()
     images_per_category = defaultdict(list)
     for img in root.glob("**/blurred_*.png"):
         images_per_category[img.parent].append(img)
+        all_images.add(img)
 
     # Quick sanity check. All values must have the same size for our
     # algorithm to work
@@ -40,6 +44,8 @@ def get_image_list() -> list[tuple[Path, Path]]:
 
         image = category_images[img_index]
         shuffled_images.append((image.parent, image))
+
+    assert all_images
 
     return shuffled_images
 
