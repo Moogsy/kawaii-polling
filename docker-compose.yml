@@ -3,23 +3,26 @@ version: '3.8'
 services:
   web:
     build: .
-    ports:
-      - "80:8000"                       # Host port 80 → Container port 8000
+    # Remove the host port 80 binding:
+    #ports:
+    #  - "80:8000"
+    # Instead, either just expose 8000 internally:
+    expose:
+      - "8000"
+    # ... rest unchanged
     volumes:
-      - ./:/app                         # Mount project code
+      - ./:/app
       - ./static/Pictures:/app/static/Pictures:ro
       - ./Ratings:/app/Ratings
     environment:
-      - SECRET_KEY=${SECRET_KEY}       # Loaded from .env (create this if you haven’t)
-    # Optional memory cap to protect from OOM:
-    # mem_limit: 600m
+      - SECRET_KEY=${SECRET_KEY}
     command:
       - gunicorn
       - app:app
       - --bind=0.0.0.0:8000
       - --worker-class=gthread
-      - --workers=1                     # single process for lowest RAM
-      - --threads=5                     # a couple threads for concurrenc
+      - --workers=1
+      - --threads=4
       - --timeout=120
       - --graceful-timeout=30
 
