@@ -11,6 +11,7 @@ services:
       - ./Ratings:/app/Ratings
     environment:
       - SECRET_KEY=${SECRET_KEY}
+      - WEB_CONCURRENCY=2
     command:
       - gunicorn
       - app:app
