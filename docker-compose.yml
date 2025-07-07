@@ -7,16 +7,17 @@ services:
       - "80:8000"
     volumes:
       - ./:/app
-      - ./Pictures:/app/Pictures
+      - ./static/Pictures:/app/static/Pictures:ro
       - ./Ratings:/app/Ratings
     environment:
       - SECRET_KEY=${SECRET_KEY}
-    command: >
-      gunicorn app:app
-        --bind 0.0.0.0:8000
-        --worker-class gthread
-        --workers 2
-        --threads 2
-        --timeout 120
-        --graceful-timeout 30
+    command:
+      - gunicorn
+      - app:app
+      - --bind=0.0.0.0:8000
+      - --worker-class=gthread
+      - --workers=2
+      - --threads=2
+      - --timeout=120
+      - --graceful-timeout=30
 
