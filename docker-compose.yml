@@ -1,14 +1,22 @@
+# docker-compose.yml
 version: '3.8'
 services:
   web:
     build: .
     ports:
-      - "80:8000"    # Host port 80 → Container port 8000
+      - "80:8000"
     volumes:
-      - ./:/app                    # Sync code for live updates
-      - ./Pictures:/app/Pictures   # Your images folder
-      - ./Ratings:/app/Ratings     # Ratings output folder
+      - ./:/app
+      - ./Pictures:/app/Pictures
+      - ./Ratings:/app/Ratings
     environment:
-      - FLASK_ENV=production
-      - SECRET_KEY=8jAWaIETXg0Nd8JOtIurGH_HUTsuqwFlJSLcpnJucCA
+      - SECRET_KEY=${SECRET_KEY}
+    command: >
+      gunicorn app:app
+        --bind 0.0.0.0:8000
+        --worker-class gthread
+        --workers 2
+        --threads 2
+        --timeout 120
+        --graceful-timeout 30
 
