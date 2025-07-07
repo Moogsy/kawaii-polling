@@ -19,7 +19,7 @@ services:
       - --bind=0.0.0.0:8000
       - --worker-class=gthread
       - --workers=1                     # single process for lowest RAM
-      - --threads=2                     # a couple threads for concurrency
+      - --threads=5                     # a couple threads for concurrenc
       - --timeout=120
       - --graceful-timeout=30
 
