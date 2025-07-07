@@ -4,12 +4,8 @@ services:
   web:
     build: .
     # Remove the host port 80 binding:
-    #ports:
-    #  - "80:8000"
-    # Instead, either just expose 8000 internally:
-    expose:
-      - "8000"
-    # ... rest unchanged
+    ports:
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./:/app
       - ./static/Pictures:/app/static/Pictures:ro
