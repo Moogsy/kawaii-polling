@@ -49,6 +49,7 @@
     }
     .scale-section { margin-bottom: 12px; }
     .scale-label { font-weight: bold; margin-bottom: 6px; display: block; }
+    .scale-def { font-size: 0.8rem; font-style: italic; margin-bottom: 8px; color: #555; }
     .likert-row {
       display: flex;
       justify-content: space-between;
@@ -78,8 +79,17 @@
         <form id="rating-form" method="POST" action="{{ url_for('submit') }}">
           {% for scale in scales %}
             <div class="scale-section">
-              <span class="scale-label">{{ scale }}</span>
-              <div class="likert-row">
+          {% if scale == "Warmth" %}
+            <span class="scale-label">This pose is warm</span>
+            <div class="scale-def">Degree of perceived emotional warmth, trust, and friendliness.</div>
+          {% elif scale == "Expressiveness" %}
+            <span class="scale-label">This pose is expressive</span>
+            <div class="scale-def">Intensity and clarity of emotional expression.</div>
+          {% else %}
+            <span class="scale-label">This pose is kawaii</span>
+            <div class="scale-def">Left up to interpretation.</div>
+          {% endif %}
+          <div class="likert-row">
                 {% for label in likert %}
                   <label><input type="radio" name="{{ scale }}" value="{{ loop.index }}" required> {{ label }}</label>
                 {% endfor %}
