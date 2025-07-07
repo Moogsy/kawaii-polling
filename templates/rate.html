@@ -10,14 +10,14 @@
       height: 100vh;
       font-family: Arial, sans-serif;
       box-sizing: border-box;
-      overflow: hidden; /* Prevents any scrolling */
+      overflow: hidden; /* no scrollbars for the page itself */
     }
 
     .container {
       display: grid;
       grid-template-rows: auto 55vh 1fr auto;
       height: 100vh;
-      padding: 10px;
+      padding: 8px;
     }
 
     h2 {
@@ -37,14 +37,12 @@
       max-height: 100%;
       max-width: 100%;
       object-fit: contain;
-      /* border: 1px solid #ccc; */
     }
 
+    /* Row 3: the scales form */
     form {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-evenly;
-      padding: 5px;
+      overflow: auto;            /* allow internal scrolling if needed */
+      padding-right: 4px;        /* avoid scrollbar overlapping content */
     }
 
     .scale-section {
@@ -69,10 +67,18 @@
       white-space: nowrap;
     }
 
-    button {
+    /* Row 4: button container */
+    .button-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 6px 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .button-container button {
       padding: 8px 16px;
       font-size: 1rem;
-      align-self: center;
     }
   </style>
 </head>
@@ -84,22 +90,28 @@
       <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
     </div>
 
-    <form method="POST" action="{{ url_for('submit') }}">
+    <form id="rating-form" method="POST" action="{{ url_for('submit') }}">
       {% for scale in scales %}
         <div class="scale-section">
           <div class="scale-label">{{ scale }}</div>
           <div class="likert-row">
             {% for label in likert %}
               <label>
-                <input type="radio" name="{{ scale }}" value="{{ loop.index }}" required>
+                <input type="radio"
+                       name="{{ scale }}"
+                       value="{{ loop.index }}"
+                       required>
                 {{ label }}
               </label>
             {% endfor %}
           </div>
         </div>
       {% endfor %}
-      <button type="submit">Next</button>
     </form>
+
+    <div class="button-container">
+      <button type="submit" form="rating-form">Next</button>
+    </div>
   </div>
 </body>
 </html>
