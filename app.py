@@ -1,11 +1,16 @@
+import os
 from collections import defaultdict
+
 from flask import Flask, render_template, request, redirect, session, url_for
 from pathlib import Path
+
 import pandas as pd
 import samplers
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
+
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-ono")
 
 # Configuration
 SCALES = ["Kawaii", "Warmth", "Expressiveness"]
