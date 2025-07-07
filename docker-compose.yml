@@ -17,8 +17,8 @@ services:
       - app:app
       - --bind=0.0.0.0:8000
       - --worker-class=gthread
-      - --workers=2
-      - --threads=2
+      - --workers=1
+      - --threads=4
       - --timeout=120
       - --graceful-timeout=30
 
