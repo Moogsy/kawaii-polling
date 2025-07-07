@@ -11,72 +11,73 @@
       height: 100vh;
       font-family: Arial, sans-serif;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: hidden; /* hide overflow for the viewport */
     }
 
     .container {
-      display: grid;
-      grid-template-rows: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
       width: 100%;
     }
 
-    /* Top half: header + image */
+    /* Top half: image area fills exactly 50% of viewport */
     .top {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      align-items: start;
-      justify-items: center;
-      padding: 8px;
-      overflow: hidden;
-    }
-    .top h2 {
-      margin: 4px 0;
-      font-size: 1.1rem;
-    }
-    .top .image-container {
-      width: 100%;
-      height: 100%;
+      height: 50vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
+      padding: 8px;
+      background: #f9f9f9;
     }
-    .top .image-container img {
-      max-width: 100%;
+    .top img {
       max-height: 100%;
+      max-width: 100%;
       object-fit: contain;
     }
 
-    /* Bottom half: form + button */
+    /* Bottom half: form + button area fills remaining 50% */
     .bottom {
+      height: 50vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
     }
-    .bottom .form-scroll {
+
+    /* Scrollable form occupies most of bottom half */
+    .form-scroll {
+      flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 0 8px;
+      padding: 8px;
     }
-    .scale-section { margin-bottom: 12px; }
-    .scale-label { font-weight: bold; margin-bottom: 6px; }
+    .scale-section {
+      margin-bottom: 12px;
+    }
+    .scale-label {
+      font-weight: bold;
+      margin-bottom: 6px;
+      display: block;
+    }
     .likert-row {
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 6px;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
     }
-    .likert-row label { white-space: nowrap; }
-    .bottom .button-container {
-      padding: 8px 0;
+    .likert-row label {
+      white-space: nowrap;
+    }
+
+    /* Next button at bottom of bottom half */
+    .button-container {
+      flex: 0 0 auto;
       text-align: center;
       border-top: 1px solid #ddd;
+      padding: 8px 0;
       background: #fff;
     }
-    .bottom .button-container button {
+    .button-container button {
       padding: 8px 16px;
       font-size: 1rem;
     }
@@ -85,18 +86,17 @@
 <body>
   <div class="container">
     <div class="top">
-      <h2>Image {{ index }} of {{ total }}</h2>
-      <div class="image-container">
-        <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
-      </div>
+      <!-- Image occupies top half -->
+      <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
     </div>
 
     <div class="bottom">
       <div class="form-scroll">
+        <h2 style="text-align:center; margin:4px 0; font-size:1.1rem;">Image {{ index }} of {{ total }}</h2>
         <form id="rating-form" method="POST" action="{{ url_for('submit') }}">
           {% for scale in scales %}
             <div class="scale-section">
-              <div class="scale-label">{{ scale }}</div>
+              <span class="scale-label">{{ scale }}</span>
               <div class="likert-row">
                 {% for label in likert %}
                   <label>
