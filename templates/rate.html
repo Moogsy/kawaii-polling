@@ -2,31 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rate the Image</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      height: 100vh;
+      height: 100%;
       font-family: Arial, sans-serif;
       box-sizing: border-box;
-      overflow: hidden; /* no scrollbars for the page itself */
     }
 
     .container {
-      display: grid;
-      grid-template-rows: auto 55vh 1fr auto;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
-      padding: 8px;
     }
 
     h2 {
       text-align: center;
-      margin: 0;
+      margin: 8px 0;
       font-size: 1.1rem;
+      flex: 0 0 auto;
     }
 
     .image-container {
+      flex: 0 0 auto;
+      max-height: 50vh;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -39,20 +41,19 @@
       object-fit: contain;
     }
 
-    /* Row 3: the scales form */
-    form {
-      overflow: auto;            /* allow internal scrolling if needed */
-      padding-right: 4px;        /* avoid scrollbar overlapping content */
+    .form-container {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 0 8px;
     }
 
     .scale-section {
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
 
     .scale-label {
       font-weight: bold;
-      font-size: 0.95rem;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
 
     .likert-row {
@@ -67,13 +68,15 @@
       white-space: nowrap;
     }
 
-    /* Row 4: button container */
     .button-container {
+      flex: 0 0 auto;
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      padding: 8px 0;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 6px 0;
-      border-top: 1px solid #ddd;
     }
 
     .button-container button {
@@ -90,24 +93,23 @@
       <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
     </div>
 
-    <form id="rating-form" method="POST" action="{{ url_for('submit') }}">
-      {% for scale in scales %}
-        <div class="scale-section">
-          <div class="scale-label">{{ scale }}</div>
-          <div class="likert-row">
-            {% for label in likert %}
-              <label>
-                <input type="radio"
-                       name="{{ scale }}"
-                       value="{{ loop.index }}"
-                       required>
-                {{ label }}
-              </label>
-            {% endfor %}
+    <div class="form-container">
+      <form id="rating-form" method="POST" action="{{ url_for('submit') }}">
+        {% for scale in scales %}
+          <div class="scale-section">
+            <div class="scale-label">{{ scale }}</div>
+            <div class="likert-row">
+              {% for label in likert %}
+                <label>
+                  <input type="radio" name="{{ scale }}" value="{{ loop.index }}" required>
+                  {{ label }}
+                </label>
+              {% endfor %}
+            </div>
           </div>
-        </div>
-      {% endfor %}
-    </form>
+        {% endfor %}
+      </form>
+    </div>
 
     <div class="button-container">
       <button type="submit" form="rating-form">Next</button>
