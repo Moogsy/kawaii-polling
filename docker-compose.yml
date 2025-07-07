@@ -1,24 +1,25 @@
-# docker-compose.yml
 version: '3.8'
+
 services:
   web:
     build: .
     ports:
-      - "80:8000"
+      - "80:8000"                       # Host port 80 → Container port 8000
     volumes:
-      - ./:/app
+      - ./:/app                         # Mount project code
       - ./static/Pictures:/app/static/Pictures:ro
       - ./Ratings:/app/Ratings
     environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - WEB_CONCURRENCY=2
+      - SECRET_KEY=${SECRET_KEY}       # Loaded from .env (create this if you haven’t)
+    # Optional memory cap to protect from OOM:
+    # mem_limit: 600m
     command:
       - gunicorn
       - app:app
       - --bind=0.0.0.0:8000
       - --worker-class=gthread
-      - --workers=1
-      - --threads=4
+      - --workers=1                     # single process for lowest RAM
+      - --threads=2                     # a couple threads for concurrency
       - --timeout=120
       - --graceful-timeout=30
 
