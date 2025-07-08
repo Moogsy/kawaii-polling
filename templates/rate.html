@@ -6,7 +6,6 @@
   <title>Rate the Image</title>
   <style>
     :root {
-      /* Fallback --vh unit for mobile browsers’ address bar behavior */
       --vh: 1vh;
     }
     html, body {
@@ -41,6 +40,23 @@
       display: flex;
       flex-direction: column;
     }
+    .progress-container {
+      padding: 8px;
+    }
+    .progress-container progress {
+      width: 100%;
+      height: 16px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .progress-container progress::-webkit-progress-bar {
+      background-color: #eee;
+      border-radius: 8px;
+    }
+    .progress-container progress::-webkit-progress-value {
+      background-color: #4caf50;
+      border-radius: 8px;
+    }
     .form-scroll {
       flex: 1;
       overflow-y: auto;
@@ -64,6 +80,9 @@
       border-top: 1px solid #ddd;
       padding: 8px 0;
       background: #fff;
+      position: sticky;
+      bottom: 0;
+      width: 100%;
     }
     .button-container button { padding: 8px 16px; font-size: 1rem; }
   </style>
@@ -74,22 +93,24 @@
       <img src="{{ url_for('static', filename=image) }}" alt="Rating Image">
     </div>
     <div class="bottom">
+      <div class="progress-container">
+        <progress value="{{ index }}" max="{{ total }}"></progress>
+      </div>
       <div class="form-scroll">
-        <h2 style="text-align:center; margin:4px 0; font-size:1.1rem;">Image {{ index }} of {{ total }}</h2>
         <form id="rating-form" method="POST" action="{{ url_for('submit') }}">
           {% for scale in scales %}
             <div class="scale-section">
-          {% if scale == "Warmth" %}
-            <span class="scale-label">This pose is warm</span>
-            <div class="scale-def">Degree of perceived emotional warmth, trust, and friendliness.</div>
-          {% elif scale == "Expressiveness" %}
-            <span class="scale-label">This pose is expressive</span>
-            <div class="scale-def">Intensity and clarity of emotional expression.</div>
-          {% else %}
-            <span class="scale-label">This pose is kawaii</span>
-            <div class="scale-def">Left up to interpretation.</div>
-          {% endif %}
-          <div class="likert-row">
+              <span class="scale-label">
+                {% if scale == "Warmth" %}This pose is warm
+                {% elif scale == "Expressiveness" %}This pose is expressive
+                {% else %}This pose is kawaii{% endif %}
+              </span>
+              <div class="scale-def">
+                {% if scale == "Warmth" %}Degree of perceived emotional warmth, trust, and friendliness.
+                {% elif scale == "Expressiveness" %}Intensity and clarity of emotional expression.
+                {% else %}Left up to interpretation.{% endif %}
+              </div>
+              <div class="likert-row">
                 {% for label in likert %}
                   <label><input type="radio" name="{{ scale }}" value="{{ loop.index }}" required> {{ label }}</label>
                 {% endfor %}
@@ -104,7 +125,6 @@
     </div>
   </div>
   <script>
-    // Adjust --vh custom property to account for mobile address bar
     function setVh() {
       document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
     }
