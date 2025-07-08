@@ -73,33 +73,6 @@ def sanitize_filename(name: str) -> str:
     safe = safe.strip('_')
     return safe or 'user'  # fallback if name was entirely removed
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    if request.method == 'POST':
-        rater = request.form.get('rater')
-        if not rater:
-            return render_template('home.html', error="Please enter your name.")
-        session['rater'] = rater
-        session['index'] = 0
-        # Determine a unique output file for this rater
-
-        sanitized_name = sanitize_filename(rater)
-        base_file = RATINGS_DIR / f"web_{sanitized_name}_ratings.csv"
-        if base_file.exists():
-            i = 1
-            while True:
-                candidate = RATINGS_DIR / f"web_{sanitized_name}_ratings_{i}.csv"
-                if not candidate.exists():
-                    base_file = candidate
-                    break
-                i += 1
-        session['outfile'] = str(base_file)
-
-        # Prepare image list
-        session['images'] = get_image_list()
-        return redirect(url_for('rate'))
-    return render_template('home.html')
-
 
 @app.route('/rate', methods=['GET'])
 def rate():
@@ -114,6 +87,44 @@ def rate():
         index=idx+1, total=len(images)
     )
 
+from flask import Flask, render_template, request, redirect, session, url_for
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    # Do we have an unfinished session?
+    images = session.get('images')
+    index = session.get('index', 0)
+    in_progress = bool(session.get('rater') and images and index < len(images))
+
+    # Handle fresh POST only if there’s no in-progress session
+    if request.method == 'POST' and not in_progress:
+        rater = request.form.get('rater')
+        if not rater:
+            return render_template('home.html', error="Please enter your name.", resume=False)
+
+        # Initialize session
+        session['rater'] = rater
+        session['index'] = 0
+
+        # Pick a unique file path
+        sanitized = sanitize_filename(rater)
+        base = RATINGS_DIR / f"web_{sanitized}_ratings.csv"
+        if base.exists():
+            i = 1
+            while True:
+                cand = RATINGS_DIR / f"web_{sanitized}_ratings_{i}.csv"
+                if not cand.exists():
+                    base = cand
+                    break
+                i += 1
+        session['outfile'] = str(base)
+
+        # Build and store the image list
+        session['images'] = get_image_list()
+        return redirect(url_for('rate'))
+
+    # Render home: either resume UI or fresh start
+    return render_template('home.html', resume=in_progress)
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -148,6 +159,12 @@ def submit():
     session['index'] = idx + 1
     return redirect(url_for('rate'))
 
+
+@app.route('/restart', methods=['POST'])
+def restart():
+    # Clear out their old session and send them back to home
+    session.clear()
+    return redirect(url_for('home'))
 
 @app.route('/thank_you')
 def thank_you():
