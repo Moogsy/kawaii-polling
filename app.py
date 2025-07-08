@@ -1,3 +1,5 @@
+
+import re
 import os
 from collections import defaultdict
 
@@ -58,6 +60,19 @@ def get_image_list():
     return shuffled
 
 
+def sanitize_filename(name: str) -> str:
+    """
+    Replace any character that isn’t a letter, digit, hyphen or underscore with '_',
+    then collapse multiple '_' into one, and strip leading/trailing '_'.
+    """
+    # 1) replace unwanted chars
+    safe = re.sub(r'[^A-Za-z0-9_-]+', '_', name)
+    # 2) collapse runs of '_' to a single '_'
+    safe = re.sub(r'_+', '_', safe)
+    # 3) strip any leading/trailing '_'
+    safe = safe.strip('_')
+    return safe or 'user'  # fallback if name was entirely removed
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
@@ -67,11 +82,13 @@ def home():
         session['rater'] = rater
         session['index'] = 0
         # Determine a unique output file for this rater
-        base_file = RATINGS_DIR / f"web_{rater}_ratings.csv"
+
+        sanitized_name = sanitize_filename(rater)
+        base_file = RATINGS_DIR / f"web_{sanitized_name}_ratings.csv"
         if base_file.exists():
             i = 1
             while True:
-                candidate = RATINGS_DIR / f"web_{rater}_ratings_{i}.csv"
+                candidate = RATINGS_DIR / f"web_{sanitized_name}_ratings_{i}.csv"
                 if not candidate.exists():
                     base_file = candidate
                     break
@@ -138,5 +155,5 @@ def thank_you():
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
 
