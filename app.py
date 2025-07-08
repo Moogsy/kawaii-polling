@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from pathlib import Path
 
 import pandas as pd
-import samplers
+from utils import samplers
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
