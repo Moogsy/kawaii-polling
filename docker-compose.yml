@@ -3,11 +3,10 @@ version: '3.8'
 services:
   web:
     build: .
-    # Remove the host port 80 binding:
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
-      - ./:/app
+      - ./:/app                           # your code & templates
       - ./static/Pictures:/app/static/Pictures:ro
       - ./Ratings:/app/Ratings
     environment:

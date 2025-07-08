@@ -17,7 +17,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-ono")
 # Configuration
 SCALES = ["Kawaii", "Warmth", "Expressiveness"]
 LIKERT = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
-IMAGE_ROOT = Path(__file__).parent / "Pictures"
+IMAGE_ROOT = Path(__file__).parent / "static"
 RATINGS_DIR = Path(__file__).parent / "Ratings"
 RATINGS_DIR.mkdir(exist_ok=True)
 
