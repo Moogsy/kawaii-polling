@@ -39,7 +39,7 @@ def convert(df: pd.DataFrame) -> pd.DataFrame:
 
     # Dictionnaire de correspondance entre codes anonymes et noms réels des modèles
     mapping = dict([
-        ("P1", "pragathi"),
+        ("P1", "pradathi"),
         ("P2", "rose"),
         ("P3", "matheusz"),
         ("P4", "victor"),
@@ -72,7 +72,7 @@ def main():
     out = convert(df)
 
     # Enregistrement du tout en csv
-    out.to_csv("./all_ratings_new_format.csv")
+    out.to_csv("./all_ratings_new_format.csv", index=False)
 
 
 # Point d’entrée du script

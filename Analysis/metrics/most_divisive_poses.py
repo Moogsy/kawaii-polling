@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -36,18 +37,19 @@ def compute_divisiveness_per_rating(df: pd.DataFrame) -> pd.DataFrame:
         on="Rating"
     )
 
-def compute_image_path(entry: tuple[str, str], base_dir: str = "../static") -> str:
+def compute_image_path(entry: tuple[str, str], images_folder: Path) -> str:
     """
     Génère le chemin vers l'image à partir de (Category, Model),
     suivant le pattern : ../static/<category>/blurred_<model>.png
     """
     category, model = entry
     safe_model = "".join(c if c.isalnum() else "_" for c in model)
-    return os.path.join(base_dir, category, f"blurred_{safe_model}.png")
+    return os.path.join(images_folder, category, f"blurred_{safe_model}.png")
 
 def plot_divisiveness_per_rating_percentage(
     df: pd.DataFrame,
-    base_dir: str = "../static"
+    *,
+    images_folder: Path
 ) -> None:
     """
     Pour chaque critère :
@@ -76,7 +78,7 @@ def plot_divisiveness_per_rating_percentage(
 
             # 1) Affiche l'image
             ax_img = axes[i, col_idx * 2]
-            img = plt.imread(compute_image_path(entry, base_dir))
+            img = plt.imread(compute_image_path(entry, images_folder))
             ax_img.imshow(img); ax_img.axis("off")
             ax_img.set_title(f"{rating}\n{label}\nσ={std_val:.2f}")
 

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -67,7 +68,7 @@ def compute_image_path(entry: tuple[str, str], base_dir: str = "../static") -> s
 def plot_multicriteria_category_representatives(
     df: pd.DataFrame,
     criteria: list[str] = ["Kawaii","Warmth","Expressiveness"],
-    base_dir: str = "../static",
+    base_dir: Path | str = "../static",
     title: str = "Pose Categories: Best, Typical & Worst Representatives"
 ) -> None:
     """

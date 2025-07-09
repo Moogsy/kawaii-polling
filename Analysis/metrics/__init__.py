@@ -4,3 +4,4 @@ from .corr_per_rating import *
 from .most_divisive_poses import *
 from .best_contenders import *
 from .model_significance import *
+from .perceptions_analysis import *
