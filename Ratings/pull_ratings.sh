@@ -1,1 +1,1 @@
-rsync -av "root@ekurea.art:/opt/image-rater/Ratings/*.csv" ./
+rsync -av "root@ekurea.art:/opt/kawaii-polling/Ratings/*.csv" ./

@@ -62,10 +62,6 @@ def run_part6_perception(df: pd.DataFrame) -> None:
       - Affichage de la distribution de consistance
     """
     metrics.plot_rater_bias_stats(df)
-        
-        # 6.2 Accord inter-évaluateurs
-        #consistency = metrics.compute_interrater_consistency(df, rating=crit)
-        #metrics.plot_interrater_consistency(consistency)
 
 
 def main():
@@ -78,11 +74,11 @@ def main():
     df = load_df_from_csv(all_ratings)
 
     # Exécute les analyses section par section
-    #run_part1_context(df)
-    #run_part2_global_stats(df)
-    #run_part3_correlations(df)
-    #run_part4_inter_category(df, images_folder)
-    #run_part5_intra_category(df, images_folder)
+    run_part1_context(df)
+    run_part2_global_stats(df)
+    run_part3_correlations(df)
+    run_part4_inter_category(df, images_folder)
+    run_part5_intra_category(df, images_folder)
     run_part6_perception(df)
 
 if __name__ == "__main__":
