@@ -1,23 +1,35 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
     build: .
-    ports:
-      - "127.0.0.1:8000:8000"
-    volumes:
-      - ./:/app                           # your code & templates
-      - ./static/Pictures:/app/static/Pictures:ro
-      - ./Ratings:/app/Ratings
     environment:
       - SECRET_KEY=${SECRET_KEY}
-    command:
-      - gunicorn
-      - app:app
-      - --bind=0.0.0.0:8000
-      - --worker-class=gthread
-      - --workers=1
-      - --threads=4
-      - --timeout=120
-      - --graceful-timeout=30
+    command: >
+      gunicorn app:app
+      --bind 0.0.0.0:8000
+      --worker-class gthread
+      --workers 1
+      --threads 4
+      --timeout 120
+      --graceful-timeout 30
+    volumes:
+      - ./:/app
+      - ./static/Pictures:/app/static/Pictures:ro
+      - ./Ratings:/app/Ratings
+    expose:
+      - "8000"            # internal only
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/letsencrypt:ro
+      - ./nginx/www:/var/www/certbot:ro
+    restart: unless-stopped
 
