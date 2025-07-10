@@ -1,4 +1,5 @@
 Pictures/*
+*.env
 env/*
 webenv/*
 __pycache__/*
