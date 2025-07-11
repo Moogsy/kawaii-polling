@@ -1,9 +1,8 @@
-Pictures/*
+*.png
 *.env
 env/*
 webenv/*
 __pycache__/*
 utils/__pycache__/*
 
-static/*
 !static/.gitkeep
