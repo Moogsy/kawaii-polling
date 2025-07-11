@@ -25,8 +25,8 @@ RATINGS_DIR.mkdir(exist_ok=True)
 def get_image_list():
     images_per_category = defaultdict(list)
 
-    # Collect all blurred_*.png images under IMAGE_ROOT
-    for img in IMAGE_ROOT.glob("**/blurred_*.png"):
+    # Collect all blurred_*.webp images under IMAGE_ROOT
+    for img in IMAGE_ROOT.glob("**/blurred_*.webp"):
         images_per_category[img.parent].append(img.relative_to(IMAGE_ROOT))
 
     # Map category → count
