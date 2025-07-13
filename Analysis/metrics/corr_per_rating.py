@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
+import seaborn as sns
+import matplotlib.pyplot as plt
+from itertools import combinations
+from scipy.stats import spearmanr
+import statsmodels.api as sm
 
 def compute_correlation_matrix(
     df: pd.DataFrame,
@@ -22,49 +26,85 @@ def compute_correlation_matrix(
         )
     else:
         raise ValueError("`level` must be 'rater' or 'image'")
-    return pivot.dropna().corr(method=method) # type: ignore
+    return pivot.dropna().corr(method=method)
 
-
-def plot_dual_correlation_matrices(
-    df: pd.DataFrame,
-    method: str = "spearman",
-    vmin: float = 0.5,
-    vmax: float = 1.0,
-    cmap: str = "coolwarm"
-) -> None:
+def plot_pairwise_correlation_scatter(df: pd.DataFrame, level: str):
     """
-    Affiche deux heatmaps côte à côte des corrélations Spearman entre types
-    de notation :
-      - Gauche : niveau d'évaluation individuel ('rater')
-      - Droite : niveau agrégé par image ('image')
+    Scatterplots avec courbes de tendance LOWESS pour toutes les paires de dimensions,
+    avec coefficient de Spearman (ρ) et p-value.
+    Utilise du jitter pour les données discrètes (niveau 'rater').
     """
-    corr_rater = compute_correlation_matrix(df, level="rater", method=method)
-    corr_image = compute_correlation_matrix(df, level="image", method=method)
 
-    labels = corr_rater.columns.tolist()
-    fig, axes = plt.subplots(1, 2, constrained_layout=True)
+    if level == "rater":
+        pivot = df.pivot_table(
+            index=["Category", "Model", "RaterID"],
+            columns="Rating",
+            values="Score"
+        ).dropna().reset_index()
+        title_suffix = "based on individual evaluations"
+    elif level == "image":
+        pivot = df.pivot_table(
+            index=["Category", "Model"],
+            columns="Rating",
+            values="Score",
+            aggfunc="mean"
+        ).dropna().reset_index()
+        title_suffix = "aggregated by pose-model pair"
+    else:
+        raise ValueError("`level` must be 'rater' or 'image'")
 
-    for ax, corr, level in zip(
-        axes,
-        [corr_rater, corr_image],
-        ["Rater-level", "Image-level"]
-    ):
-        im = ax.imshow(corr.values, vmin=vmin, vmax=vmax, cmap=cmap)
-        ax.set_xticks(np.arange(len(labels)))
-        ax.set_xticklabels(labels, rotation=45, ha="right")
-        ax.set_yticks(np.arange(len(labels)))
-        ax.set_yticklabels(labels)
-        for i in range(len(labels)):
-            for j in range(len(labels)):
-                val = corr.iat[i, j]
-                text_color = "white" if abs(val) > (vmin + vmax) / 2 else "black"
-                ax.text(j, i, f"{val:.2f}",
-                        ha="center", va="center", color=text_color)
-        ax.set_title(f"Spearman correlation between rating types\n({level})",
-                     fontsize=12, pad=10)
+    rating_cols = ['Kawaii', 'Warmth', 'Expressiveness']
+    pairs = list(combinations(rating_cols, 2))
 
-    # Barre de couleur partagée
-    fig.colorbar(im, ax=axes, orientation="vertical",  # type: ignore
-        fraction=0.05, pad=0.02, label="Spearman ρ")
+    fig, axes = plt.subplots(1, len(pairs), figsize=(6 * len(pairs), 4), squeeze=False)
+    jitter_strength = 0.1 if level == "rater" else 0.0
+
+    for (i, (x_var, y_var)) in enumerate(pairs):
+        ax = axes[0, i]
+        x = pivot[x_var].values
+        y = pivot[y_var].values
+
+        # Jitter si applicable
+        if jitter_strength > 0:
+            x_j = x + np.random.uniform(-jitter_strength, jitter_strength, size=len(x))
+            y_j = y + np.random.uniform(-jitter_strength, jitter_strength, size=len(y))
+        else:
+            x_j, y_j = x, y
+
+        # Corrélation
+        rho, pval = spearmanr(x, y)
+
+        # Scatterplot
+        sns.scatterplot(x=x_j, y=y_j, ax=ax, color="orange", marker="x", edgecolor="w", s=40)
+
+        # Courbe LOWESS
+        smoothed = sm.nonparametric.lowess(y, x, frac=0.4)
+        ax.plot(smoothed[:, 0], smoothed[:, 1], color="black", linewidth=1.5, label="LOWESS")
+
+        # Annotations
+        ax.set_title(f"{x_var} vs {y_var}", fontsize=11)
+        ax.text(0.05, 0.95, f"ρ = {rho:.2f}\np = {pval:.3f}",
+                transform=ax.transAxes, ha="left", va="top",
+                fontsize=10, bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="gray", alpha=0.9))
+
+        # Axes
+        ax.set_xlabel(x_var)
+        ax.set_ylabel(y_var)
+        ax.set_xlim(0.8, 5.2)
+        ax.set_ylim(0.8, 5.2)
+        ax.set_xticks(np.arange(1, 6))
+        ax.set_yticks(np.arange(1, 6))
+        ax.grid(True, linestyle="--", alpha=0.4)
+
+    fig.suptitle(f"Spearman correlations between perceptual dimensions\n({title_suffix})",
+                 fontsize=15, fontweight='bold')
+
+    fig.text(
+        0.5, 0.01,
+        "Note: Black line = LOWESS trend. Jitter added for Likert-scale clarity (rater level only).",
+        ha='center', fontsize=9, style='italic', alpha=0.85
+    )
+
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     plt.show()
 

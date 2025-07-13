@@ -32,7 +32,8 @@ def run_part3_correlations(df: pd.DataFrame) -> None:
     Partie III. Corrélations entre critères
     Question : Dans quelle mesure Kawaii, Warmth et Expressiveness sont-ils corrélés ?
     """
-    metrics.plot_dual_correlation_matrices(df, method="spearman")
+    metrics.plot_pairwise_correlation_scatter(df, level="rater")
+    metrics.plot_pairwise_correlation_scatter(df, level="image")
 
 def run_part4_inter_category(df: pd.DataFrame, images_folder: Path) -> None:
     """
@@ -73,13 +74,15 @@ def main():
 
     df = load_df_from_csv(all_ratings)
 
+    df = df[~df["Model"].str.lower().eq("kelly")]
+
     # Exécute les analyses section par section
-    run_part1_context(df)
-    run_part2_global_stats(df)
+    #run_part1_context(df)
+    #run_part2_global_stats(df)
     run_part3_correlations(df)
-    run_part4_inter_category(df, images_folder)
-    run_part5_intra_category(df, images_folder)
-    run_part6_perception(df)
+    #run_part4_inter_category(df, images_folder)
+    #run_part5_intra_category(df, images_folder)
+    #run_part6_perception(df)
 
 if __name__ == "__main__":
     main()

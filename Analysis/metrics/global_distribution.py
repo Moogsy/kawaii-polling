@@ -33,67 +33,59 @@ def compute_global_stats_likert(df: pd.DataFrame) -> pd.DataFrame:
     stats['pct_bottom2'] = (stats['pct_bottom2'] * 100).round(3)
     return stats.round(3)
 
-
 def plot_metrics_per_category(df: pd.DataFrame, ncols: int = 2):
     """
-    Trace par catégorie et critère les barplots (moyenne ± écart-type + médiane/max/min)
-    et ajoute un tableau compact des stats globales Likert dans la dernière case.
+    Trace des boxplots par catégorie et par critère (Rating) pour des scores sur échelle de Likert.
+    Corrige les warnings liés à l'utilisation de `palette` sans `hue` et à `set_ticklabels`.
+    Affiche ≈ X/model sous les catégories + ajoute une ligne de médiane globale + légende complète.
     """
-    # 1) calcul groupé
-    grouped = df.groupby(['Category', 'Rating'])
-    metrics = grouped['Score'].agg(
-        Count='count',
-        Average='mean',
-        Median='median',
-        StdDev=lambda x: x.std(ddof=0),
-        Min='min',
-        Max='max'
-    )
+    import seaborn as sns
+    from matplotlib.lines import Line2D
 
-    # 2) extraction pour barplots
-    means   = metrics['Average'].unstack('Rating')  # type: ignore
-    stds    = metrics['StdDev'   ].unstack('Rating')  # type: ignore
-    medians = metrics['Median'   ].unstack('Rating')  # type: ignore
-    mins    = metrics['Min'      ].unstack('Rating')  # type: ignore
-    maxs    = metrics['Max'      ].unstack('Rating')  # type: ignore
-
-    cats     = means.index.tolist()
-    ratings  = means.columns.tolist()
+    ratings = df['Rating'].unique()
     n_ratings = len(ratings)
-    nrows     = int(np.ceil(n_ratings / ncols))
-    x         = np.arange(len(cats))
+    nrows = int(np.ceil(n_ratings / ncols))
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
-                             figsize=(6*ncols, 4*nrows),
-                             squeeze=False)
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(6 * ncols, 5 * nrows), squeeze=False)
 
-    cmap = plt.get_cmap('Set3', n_ratings)
-    median_color = "Orange"
-    max_color    = "Red"
-    min_color    = "Blue"
+    global_medians = df.groupby("Rating")["Score"].median().to_dict()
 
-    # Barplots
     for idx, rating in enumerate(ratings):
         row, col = divmod(idx, ncols)
         ax = axes[row][col]
-        color = cmap(idx)
-        ax.bar(x, means[rating], width=0.6, color=color)
-        ax.errorbar(x, means[rating], yerr=stds[rating],
-                    fmt='none', ecolor='gray', capsize=3)
-        ax.scatter(x, medians[rating], marker='D',
-                   color=median_color, label='Median')
-        ax.scatter(x, maxs[rating], marker='^',
-                   color=max_color,    label='Max')
-        ax.scatter(x, mins[rating], marker='v',
-                   color=min_color,    label='Min')
-        ax.set_title(rating)
-        ax.set_xticks(x)
-        ax.set_xticklabels(cats, ha='right')
-        ax.set_ylim(0.8, 5.2)
-        ax.set_ylabel('Score')
-        ax.grid(axis='y', linestyle='--', alpha=0.6)
+        data_subset = df[df['Rating'] == rating]
 
-    # 4) Tableau global dans la case vide
+        # Comptage par catégorie uniquement pour le Rating courant
+        grouped = data_subset.groupby("Category")
+        categories_ordered = sorted(grouped.groups.keys())
+        categories_with_n = []
+
+        for cat in categories_ordered:
+            sub = data_subset[data_subset["Category"] == cat]
+            n_models = sub["Model"].nunique()
+            n_scores = sub.shape[0]
+            avg_per_model = round(n_scores / n_models, 1) if n_models > 0 else 0
+            label = f"{cat}\nµ ≈ {avg_per_model}"
+            categories_with_n.append(label)
+
+        sns.boxplot(
+            data=data_subset, x='Category', y='Score', ax=ax,
+            hue='Category', legend=False,
+            showmeans=True,
+            meanprops={"marker": "o", "markerfacecolor": "black", "markeredgecolor": "black"},
+            flierprops={"marker": "o", "markerfacecolor": "white", "markeredgecolor": "black", "markersize": 6},
+            order=categories_ordered
+        )
+        ax.axhline(global_medians[rating], color='gray', linestyle='--', linewidth=1, label='Global Median')
+        ax.set_title(f"Distribution of '{rating}' Scores by Pose Category", fontsize=12)
+        ax.set_xticks(range(len(categories_with_n)))
+        ax.set_xticklabels(categories_with_n, rotation=45, ha='right')
+        ax.set_ylim(0.8, 5.2)
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
+        ax.set_xlabel("Pose Category")
+        ax.set_ylabel("Likert Score")
+
+    # Ajouter le tableau des stats globales dans la case vide suivante
     stats_global = compute_global_stats_likert(df)
     stats_global = stats_global.rename(columns={
         'pct_top2': 'pct≥4',
@@ -101,46 +93,41 @@ def plot_metrics_per_category(df: pd.DataFrame, ncols: int = 2):
         'q1': 'Q1',
         'q3': 'Q3'
     })
+
     for empty_idx in range(n_ratings, nrows * ncols):
         row, col = divmod(empty_idx, ncols)
         ax_tab = axes[row][col]
-        if empty_idx == n_ratings:
-            ax_tab.axis('off')
-            tbl = ax_tab.table(
-                cellText=stats_global.values.tolist(),
-                colLabels=stats_global.columns.tolist(),
-                cellLoc='center',
-                colLoc='center',
-                loc='center'
-            )
-            tbl.auto_set_font_size(False)
-            tbl.set_fontsize(8)
-            tbl.scale(1, 1.2)
-            for (r, _), cell in tbl.get_celld().items():
-                if r == 0:
-                    cell.set_text_props(ha='left')
-            ax_tab.set_title("Stats globales", pad=10)
-        else:
-            ax_tab.axis('off')
+        ax_tab.axis('off')
+        tbl = ax_tab.table(
+            cellText=stats_global.values.tolist(),
+            colLabels=stats_global.columns.tolist(),
+            cellLoc='center',
+            colLoc='center',
+            loc='center'
+        )
+        tbl.auto_set_font_size(False)
+        tbl.set_fontsize(8)
+        tbl.scale(1, 1.2)
+        for (r, _), cell in tbl.get_celld().items():
+            if r == 0:
+                cell.set_text_props(ha='left')
+        ax_tab.set_title("Global Likert Scale Statistics", pad=10)
 
-    # Labels communs
-    fig.text(0.5, 0.04, 'Category', ha='center', fontsize=14)
-    fig.text(0.04, 0.5, 'Score', va='center', rotation='vertical', fontsize=14)
-
-    # Légende partagée
+    # Légende commune
     legend_elems = [
-        Line2D([0], [0], marker='D', color='w', label='Median',
-               markerfacecolor=median_color, markersize=8),
-        Line2D([0], [0], marker='^', color='w', label='Max',
-               markerfacecolor=max_color, markersize=8),
-        Line2D([0], [0], marker='v', color='w', label='Min',
-               markerfacecolor=min_color, markersize=8),
+        Line2D([0], [0], marker='o', color='w', label='Mean',
+               markerfacecolor='black', markeredgecolor='black', markersize=8),
+        Line2D([0], [0], marker='o', color='w', label='Outlier',
+               markerfacecolor='white', markeredgecolor='black', markersize=8),
+        Line2D([0], [0], color='gray', linestyle='--', label='Global Median'),
+        Line2D([], [], color='none', label='µ ≈ average ratings per model')
     ]
-    fig.legend(handles=legend_elems, loc='upper center',
-               ncol=3, frameon=False)
+    fig.legend(handles=legend_elems, loc='upper center', ncol=4, frameon=False)
 
-    plt.tight_layout(rect=[0, 0.05, 1, 0.95]) # type: ignore
+    # Titre principal
+    fig.suptitle("Distribution of Likert Ratings Across Pose Categories and Perceptual Criteria",
+                 fontsize=16, fontweight='bold', y=1.02)
+
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     plt.show()
-
-    return metrics
 
