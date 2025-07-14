@@ -60,7 +60,7 @@ def plot_divisiveness_per_rating_percentage(
     div = compute_divisiveness_per_rating(df)
     ratings = div["Rating"].tolist()
     n = len(ratings)
-    score_levels = list(range(6))  # 0,1,2,3,4,5
+    score_levels = list(range(1, 6))  # 0,1,2,3,4,5
 
     fig, axes = plt.subplots(n, 4, figsize=(16, 4 * n), constrained_layout=True)
 

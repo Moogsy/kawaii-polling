@@ -74,15 +74,15 @@ def main():
 
     df = load_df_from_csv(all_ratings)
 
-    df = df[~df["Model"].str.lower().eq("kelly")]
+    #df = df[~df["Model"].str.lower().eq("kelly")]
 
     # Exécute les analyses section par section
-    #run_part1_context(df)
-    #run_part2_global_stats(df)
+    run_part1_context(df)
+    run_part2_global_stats(df)
     run_part3_correlations(df)
-    #run_part4_inter_category(df, images_folder)
-    #run_part5_intra_category(df, images_folder)
-    #run_part6_perception(df)
+    run_part4_inter_category(df, images_folder)
+    run_part5_intra_category(df, images_folder)
+    run_part6_perception(df)
 
 if __name__ == "__main__":
     main()
