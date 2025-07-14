@@ -1,8 +1,10 @@
 *.png
 *.env
 env/*
+AI/env/*
 webenv/*
 __pycache__/*
 utils/__pycache__/*
+originals/*
 
 !static/.gitkeep
