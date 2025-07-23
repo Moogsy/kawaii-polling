@@ -272,7 +272,9 @@ def main():
     gkf = GroupKFold(n_splits=len(np.unique(groups)))
 
     model = RandomForestRegressor(
-            n_estimators=200, 
+            n_estimators=100,
+            max_depth=3,
+            min_samples_leaf=5,
             random_state=42
     )
     scoring = {'r2': 'r2', 'neg_mse': 'neg_mean_squared_error'}
