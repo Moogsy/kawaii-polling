@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-from sklearn.model_selection import KFold, cross_validate, cross_val_predict
+from sklearn.model_selection import cross_validate, cross_val_predict
 import matplotlib.pyplot as plt
 
 # -----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 FEATURE_NAMES = [
     'Elbow_Min_Angle', 'Elbow_Delta_Angle',
     'Knee_Min_Angle', 'Knee_Delta_Angle',
-    'R_Arm_Ratio', 'L_Arm_Ratio',
+    'Arm_Mean_Ratio',
     'COG_X', 'COG_Y',
     'Head_Tilt', 'Head_Rot',
 ]
@@ -143,9 +143,6 @@ def angle(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
 
 
 def compute_geom_features(pts: np.ndarray) -> np.ndarray:
-    """
-    Compute geometry-based features in the order defined by FEATURE_NAMES.
-    """
     idx = {
         'RSHO': 12, 'RELB': 14, 'RWRA': 16,
         'LSHO': 11, 'LELB': 13, 'LWRA': 15,
@@ -155,7 +152,7 @@ def compute_geom_features(pts: np.ndarray) -> np.ndarray:
     }
     dist = lambda u, v: np.linalg.norm(u - v)
 
-    # Compute raw joint angles
+    # Joint angles
     raw_elbow = [
         angle(pts[idx['RSHO']], pts[idx['RELB']], pts[idx['RWRA']]),
         angle(pts[idx['LSHO']], pts[idx['LELB']], pts[idx['LWRA']])
@@ -164,19 +161,19 @@ def compute_geom_features(pts: np.ndarray) -> np.ndarray:
         angle(pts[idx['RHIP']], pts[idx['RKNE']], pts[idx['RANK']]),
         angle(pts[idx['LHIP']], pts[idx['LKNE']], pts[idx['LANK']])
     ]
-    # Extract min and delta
     elbow_min = min(raw_elbow)
     elbow_delta = max(raw_elbow) - elbow_min
     knee_min = min(raw_knee)
     knee_delta = max(raw_knee) - knee_min
 
-    # Limb-length ratios
-    ratios = [
-        dist(pts[idx['RSHO']], pts[idx['RELB']]) / (dist(pts[idx['RSHO']], pts[idx['RHIP']]) + 1e-8),
-        dist(pts[idx['LSHO']], pts[idx['LELB']]) / (dist(pts[idx['LSHO']], pts[idx['LHIP']]) + 1e-8),
-    ]
+    # Morphology: mean arm-to-torso ratio (upper arm)
+    r_ratio = dist(pts[idx['RSHO']], pts[idx['RELB']])
+    l_ratio = dist(pts[idx['LSHO']], pts[idx['LELB']])
+    arm_mean_ratio = (r_ratio + l_ratio) / 2
+
     # Center of gravity
-    cog = pts.mean(axis=0).tolist()
+    cog_x, cog_y = pts.mean(axis=0)
+
     # Head features
     head_tilt = angle_between(pts[idx['LEAR']], pts[idx['REAR']])
     head_rot = dist(pts[idx['NOSE']], pts[idx['LSHO']]) / (dist(pts[idx['NOSE']], pts[idx['RSHO']]) + 1e-8)
@@ -184,8 +181,8 @@ def compute_geom_features(pts: np.ndarray) -> np.ndarray:
     feats = [
         elbow_min, elbow_delta,
         knee_min, knee_delta,
-        *ratios,
-        *cog,
+        arm_mean_ratio,
+        cog_x, cog_y,
         head_tilt, head_rot
     ]
     arr = np.array(feats)
@@ -196,9 +193,6 @@ def compute_geom_features(pts: np.ndarray) -> np.ndarray:
 
 
 def _plot_feature_importance(importances: np.ndarray) -> None:
-    """
-    Plot feature importances using FEATURE_NAMES.
-    """
     plt.figure(figsize=(6, 4))
     order = np.argsort(importances)[::-1]
     plt.barh([FEATURE_NAMES[i] for i in order], importances[order])
@@ -210,9 +204,6 @@ def _plot_feature_importance(importances: np.ndarray) -> None:
 
 
 def _plot_regression(y: np.ndarray, y_pred: np.ndarray, overall_r2: float) -> None:
-    """
-    Plot predicted vs actual regression scatter.
-    """
     plt.figure(figsize=(5, 5))
     plt.scatter(y, y_pred, alpha=0.7, edgecolors='k')
     mn, mx = min(y.min(), y_pred.min()), max(y.max(), y_pred.max())
@@ -242,7 +233,17 @@ def main():
             df['ModelID'].apply(lambda m: f"blurred_{m}.png")
         )
 
-    X, y = [], []
+    # Compute residuals to remove person and pose biases
+    df['person_mean'] = df.groupby('ModelID')['kawaii_mean'].transform('mean')
+    df['pose_mean'] = df.groupby('Category')['kawaii_mean'].transform('mean')
+    overall_mean = df['kawaii_mean'].mean()
+    df['residual'] = (
+        df['kawaii_mean']
+        - df['person_mean']
+        - df['pose_mean']
+        + overall_mean
+    )
+    X, y, model_ids = [], [], []
     for _, row in df.iterrows():
         path = Path(row['image_path'])
         if not path.exists():
@@ -255,7 +256,8 @@ def main():
 
         norm = normalize_pose(pts, vis)
         X.append(compute_geom_features(norm))
-        y.append(row['kawaii_mean'])
+        y.append(row['residual'])
+        model_ids.append(row['ModelID'])
 
     X = np.vstack(X)
     y = np.array(y)
@@ -265,19 +267,38 @@ def main():
         f"Feature dimension {X.shape[1]} does not match FEATURE_NAMES {len(FEATURE_NAMES)}"
     )
 
-    model = RandomForestRegressor(n_estimators=200, random_state=42)
-    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    from sklearn.model_selection import GroupKFold
+    groups = pd.factorize(model_ids)[0]
+    gkf = GroupKFold(n_splits=len(np.unique(groups)))
+
+    model = RandomForestRegressor(
+            n_estimators=200, 
+            random_state=42
+    )
     scoring = {'r2': 'r2', 'neg_mse': 'neg_mean_squared_error'}
 
-    cv = cross_validate(model, X, y, cv=kf, scoring=scoring)
-    r2_vals = cv['test_r2']
-    rmse_vals = np.sqrt(-cv['test_neg_mse'])
+    cv_results = cross_validate(
+        model, X, y,
+        cv=gkf.split(X, y, groups),
+        scoring=scoring,
+        return_train_score=True
+    )
+    train_r2 = cv_results['train_r2']
+    test_r2 = cv_results['test_r2']
+    folds = np.arange(1, len(train_r2) + 1)
 
-    logging.info(f"CV R2   : {r2_vals.mean():.3f} ± {r2_vals.std():.3f}")
-    logging.info(f"CV RMSE: {rmse_vals.mean():.3f} ± {rmse_vals.std():.3f}")
+    plt.figure(figsize=(6, 4))
+    plt.plot(folds, train_r2, marker='o', label='Train R2')
+    plt.plot(folds, test_r2, marker='o', label='Test R2')
+    plt.xlabel('Fold')
+    plt.ylabel('R²')
+    plt.title('Train vs Test R² per GroupKFold')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
     model.fit(X, y)
-    y_pred = cross_val_predict(model, X, y, cv=kf)
+    y_pred = cross_val_predict(model, X, y, cv=gkf.split(X, y, groups))
     overall_r2 = r2_score(y, y_pred)
 
     importances = model.feature_importances_
