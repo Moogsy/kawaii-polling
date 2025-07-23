@@ -22,9 +22,11 @@ import matplotlib.pyplot as plt
 # -----------------------------------------------------------------------------
 # Global feature names must match output of compute_geom_features
 FEATURE_NAMES = [
-    'R_Elbow_Angle', 'L_Elbow_Angle', 'R_Knee_Angle', 'L_Knee_Angle',
-    'R_Arm_Ratio', 'L_Arm_Ratio', 'Elb_Sym', 'Kne_Sym',
-    'COG_X', 'COG_Y', 'Head_Tilt', 'Head_Rot',
+    'Elbow_Min_Angle', 'Elbow_Delta_Angle',
+    'Knee_Min_Angle', 'Knee_Delta_Angle',
+    'R_Arm_Ratio', 'L_Arm_Ratio',
+    'COG_X', 'COG_Y',
+    'Head_Tilt', 'Head_Rot',
 ]
 # -----------------------------------------------------------------------------
 
@@ -151,23 +153,40 @@ def compute_geom_features(pts: np.ndarray) -> np.ndarray:
         'LHIP': 23, 'LKNE': 25, 'LANK': 27,
         'LEAR': 7,  'REAR': 8,  'NOSE': 0
     }
-    feats = [
+    dist = lambda u, v: np.linalg.norm(u - v)
+
+    # Compute raw joint angles
+    raw_elbow = [
         angle(pts[idx['RSHO']], pts[idx['RELB']], pts[idx['RWRA']]),
-        angle(pts[idx['LSHO']], pts[idx['LELB']], pts[idx['LWRA']]),
+        angle(pts[idx['LSHO']], pts[idx['LELB']], pts[idx['LWRA']])
+    ]
+    raw_knee = [
         angle(pts[idx['RHIP']], pts[idx['RKNE']], pts[idx['RANK']]),
-        angle(pts[idx['LHIP']], pts[idx['LKNE']], pts[idx['LANK']]),
-        np.linalg.norm(pts[idx['RSHO']] - pts[idx['RELB']]) /
-            (np.linalg.norm(pts[idx['RSHO']] - pts[idx['RHIP']]) + 1e-8),
-        np.linalg.norm(pts[idx['LSHO']] - pts[idx['LELB']]) /
-            (np.linalg.norm(pts[idx['LSHO']] - pts[idx['LHIP']]) + 1e-8),
-        # symmetry
-        abs(feats[0] - feats[1]), abs(feats[2] - feats[3]),
-        # center of gravity
-        *pts.mean(axis=0),
-        # head tilt & rotation
-        angle_between(pts[idx['LEAR']], pts[idx['REAR']]),
-        np.linalg.norm(pts[idx['NOSE']] - pts[idx['LSHO']]) / 
-            (np.linalg.norm(pts[idx['NOSE']] - pts[idx['RSHO']]) + 1e-8),
+        angle(pts[idx['LHIP']], pts[idx['LKNE']], pts[idx['LANK']])
+    ]
+    # Extract min and delta
+    elbow_min = min(raw_elbow)
+    elbow_delta = max(raw_elbow) - elbow_min
+    knee_min = min(raw_knee)
+    knee_delta = max(raw_knee) - knee_min
+
+    # Limb-length ratios
+    ratios = [
+        dist(pts[idx['RSHO']], pts[idx['RELB']]) / (dist(pts[idx['RSHO']], pts[idx['RHIP']]) + 1e-8),
+        dist(pts[idx['LSHO']], pts[idx['LELB']]) / (dist(pts[idx['LSHO']], pts[idx['LHIP']]) + 1e-8),
+    ]
+    # Center of gravity
+    cog = pts.mean(axis=0).tolist()
+    # Head features
+    head_tilt = angle_between(pts[idx['LEAR']], pts[idx['REAR']])
+    head_rot = dist(pts[idx['NOSE']], pts[idx['LSHO']]) / (dist(pts[idx['NOSE']], pts[idx['RSHO']]) + 1e-8)
+
+    feats = [
+        elbow_min, elbow_delta,
+        knee_min, knee_delta,
+        *ratios,
+        *cog,
+        head_tilt, head_rot
     ]
     arr = np.array(feats)
     assert arr.shape[0] == len(FEATURE_NAMES), (
@@ -182,10 +201,7 @@ def _plot_feature_importance(importances: np.ndarray) -> None:
     """
     plt.figure(figsize=(6, 4))
     order = np.argsort(importances)[::-1]
-    plt.barh(
-        [FEATURE_NAMES[i] for i in order],
-        importances[order]
-    )
+    plt.barh([FEATURE_NAMES[i] for i in order], importances[order])
     plt.gca().invert_yaxis()
     plt.xlabel("Importance")
     plt.title("Feature Importances")
