@@ -59,7 +59,7 @@ def main():
     # Ensure image_path column
     if 'image_path' not in df.columns:
         df['image_path'] = df.apply(
-            lambda r: static_dir / r['Category'] / f"blurred_{r['ModelID']}.png",
+            lambda r: static_dir / r['Category'] / f"{r['ModelID']}.png",
             axis=1
         )
         logging.info("Reconstructed image_path column")

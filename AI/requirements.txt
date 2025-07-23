@@ -4,3 +4,4 @@ numpy
 Pillow
 mediapipe
 scikit-learn
+openpifpaf

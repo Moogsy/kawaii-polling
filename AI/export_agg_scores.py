@@ -51,7 +51,7 @@ def aggregate_mean_scores(df: pd.DataFrame) -> pd.DataFrame:
 # --- Construct image paths ---
 def construct_image_paths(agg: pd.DataFrame, static_dir: Path) -> pd.DataFrame:
     agg['image_path'] = agg.apply(
-        lambda r: static_dir / r['Category'] / f"blurred_{r['ModelID']}.png",
+        lambda r: static_dir / r['Category'] / f"{r['ModelID']}.jpg",
         axis=1
     )
     logging.info("Constructed image paths for all records")
