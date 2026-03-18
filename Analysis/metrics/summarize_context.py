@@ -1,3 +1,9 @@
+"""
+Provides a high-level overview of the dataset.
+summarize_context() counts distinct poses, models, evaluators, images, ratings,
+and criteria, plus computes average annotation counts per evaluator and per image.
+plot_context_summary() renders those numbers as a matplotlib table.
+"""
 import pandas as pd
 from matplotlib import pyplot as plt
 

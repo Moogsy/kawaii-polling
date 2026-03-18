@@ -1,3 +1,12 @@
+"""
+Describes the overall score distribution across the dataset.
+compute_global_stats_likert() produces per-criterion descriptive statistics suited to
+Likert data: mean, median, mode, Q1/Q3/IQR, skewness, and the percentage of scores
+in the top two (≥4) and bottom two (≤2) bins.
+plot_metrics_per_category() draws one boxplot panel per criterion showing score
+distributions across pose categories, overlays the global median, plots outliers
+scaled by frequency, and appends a summary statistics table in any remaining grid cell.
+"""
 from collections import Counter
 
 import seaborn as sns

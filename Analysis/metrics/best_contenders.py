@@ -1,3 +1,10 @@
+"""
+Identifies the best, worst, and "typical" model for every (criterion, category) pair
+and renders a summary grid.  For each cell the grid shows the category mean score
+alongside three thumbnail images — best, typical (closest to mean), and worst model —
+each annotated with its per-model average.  Criteria columns are ordered by the first
+criterion so the overall ranking is immediately visible.
+"""
 import os
 from pathlib import Path
 import pandas as pd

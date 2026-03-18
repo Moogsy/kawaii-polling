@@ -1,3 +1,11 @@
+"""
+Explores relationships between the three perceptual dimensions (Kawaii, Warmth,
+Expressiveness).  compute_correlation_matrix() builds a Spearman or Pearson
+correlation matrix at either the individual-rater level or the image-aggregate level.
+plot_pairwise_correlation_scatter() draws a scatter plot for every pair of dimensions
+with a LOWESS trend line and annotates each panel with Spearman ρ and p-value; jitter
+is applied when working at the rater level to reduce overplotting on the Likert grid.
+"""
 import numpy as np
 import pandas as pd
 import seaborn as sns

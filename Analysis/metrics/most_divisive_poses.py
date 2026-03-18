@@ -1,3 +1,11 @@
+"""
+Finds and visualises the most and least divisive pose-model pairs per rating criterion.
+Divisiveness is measured by the population standard deviation of scores across raters.
+compute_divisiveness_per_rating() returns the (Category, Model) pair with the highest
+and lowest std for each criterion.
+plot_divisiveness_per_rating_percentage() renders a 4-column grid: for each criterion
+it shows the image and score-percentage bar chart for both extremes side by side.
+"""
 import os
 from pathlib import Path
 import numpy as np

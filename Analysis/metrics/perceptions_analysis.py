@@ -1,3 +1,12 @@
+"""
+Analyses rater behaviour and inter-rater agreement.
+compute_rater_bias_stats() returns per-rater mean, std, and floor/ceiling proportions
+for a chosen criterion.  compute_interrater_consistency() computes pairwise Spearman
+correlations across raters and returns each rater's average agreement with the others.
+Three plot functions visualise: rater mean scores with quartile bands and self-rater
+markers; extreme-score (floor/ceiling) proportions; and the distribution of
+inter-rater Spearman correlations.
+"""
 import pandas as pd
 import numpy as np
 from scipy.stats import spearmanr

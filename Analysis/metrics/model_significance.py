@@ -1,3 +1,11 @@
+"""
+Tests whether the choice of model has a statistically significant effect on
+perception scores for each (rating criterion, pose category) combination.
+compute_model_effect_significance() runs a Kruskal-Wallis test across model groups
+and returns H statistic, p-value, -log10(p), and significance stars (*, **, ***).
+plot_model_effect_significance() visualises the results as a heatmap of -log10(p)
+values annotated with significance stars and raw p-values.
+"""
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

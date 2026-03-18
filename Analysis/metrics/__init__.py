@@ -1,3 +1,8 @@
+"""
+Metrics package for kawaii-polling analysis.
+Re-exports all public functions from each sub-module so callers can do
+`from metrics import <any_function>` without knowing which file it lives in.
+"""
 from .summarize_context import *
 from .global_distribution import *
 from .corr_per_rating import *
