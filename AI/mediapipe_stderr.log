@@ -1,22 +1,10 @@
-libEGL warning: DRI3: Screen seems not DRI3 capable
-libEGL warning: DRI3: Screen seems not DRI3 capable
-MESA: error: ZINK: failed to choose pdev
-libEGL warning: egl: failed to create dri2 screen
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1753254686.024907    1176 gl_context_egl.cc:85] Successfully initialized EGL. Major : 1 Minor: 5
-I0000 00:00:1753254686.049278    1231 gl_context.cc:357] GL version: 3.0 (OpenGL ES 3.0 Mesa 24.2.8-1ubuntu1~24.04.1), renderer: D3D12 (Intel(R) UHD Graphics)
+I0000 00:00:1767932249.692499    1682 gl_context_egl.cc:85] Successfully initialized EGL. Major : 1 Minor: 5
+I0000 00:00:1767932249.709239    1757 gl_context.cc:357] GL version: 3.2 (OpenGL ES 3.2 Mesa 25.0.7-0ubuntu0.24.04.2), renderer: llvmpipe (LLVM 20.1.2, 256 bits)
 INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
-W0000 00:00:1753254686.134232    1216 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-W0000 00:00:1753254686.159499    1224 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1767932249.803817    1722 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1767932249.838893    1728 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 /home/moogs/GitHub/kawaii-polling/AI/env/lib/python3.12/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
   warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
-Traceback (most recent call last):
-  File "/home/moogs/GitHub/kawaii-polling/AI/geometric_normalized.py", line 273, in <module>
-    main()
-  File "/home/moogs/GitHub/kawaii-polling/AI/geometric_normalized.py", line 241, in main
-    X.append(compute_geom_features(norm))
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/moogs/GitHub/kawaii-polling/AI/geometric_normalized.py", line 164, in compute_geom_features
-    abs(feats[0] - feats[1]), abs(feats[2] - feats[3]),
-        ^^^^^
-UnboundLocalError: cannot access local variable 'feats' where it is not associated with a value
+/home/moogs/GitHub/kawaii-polling/AI/geometric_normalized.py:282: FutureWarning: factorize with argument that is not not a Series, Index, ExtensionArray, or np.ndarray is deprecated and will raise in a future version.
+  groups = pd.factorize(model_ids)[0]

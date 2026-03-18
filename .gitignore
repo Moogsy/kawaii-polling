@@ -1,11 +1,31 @@
 *.jpg
 *.png
 *.env
-env/*
-AI/env/*
-webenv/*
-__pycache__/*
-utils/__pycache__/*
-originals/*
+env/
+AI/env/
+webenv/
+**/__pycache__/
+originals/
+
+# PyTorch model files
+*.pt
+*.pth
+*.pkl
+
+# Data / generated outputs
+*.csv
+*.log
+
+# AI working directories
+AI/landmarks_cache/
+AI/results/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
 
 !static/.gitkeep

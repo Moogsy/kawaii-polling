@@ -202,6 +202,17 @@ def _plot_feature_importance(importances: np.ndarray) -> None:
     plt.tight_layout()
     plt.show()
 
+def print_feature_importance_table(importances: np.ndarray) -> None:
+    df = pd.DataFrame({
+        "Feature": FEATURE_NAMES,
+        "Importance": importances
+    }).sort_values("Importance", ascending=False)
+
+    df["Importance"] = df["Importance"].round(3)
+
+    print("\n=== Feature Importance Table ===")
+    print(df.to_string(index=False))
+
 
 def _plot_regression(y: np.ndarray, y_pred: np.ndarray, overall_r2: float) -> None:
     plt.figure(figsize=(5, 5))
@@ -272,9 +283,9 @@ def main():
     gkf = GroupKFold(n_splits=len(np.unique(groups)))
 
     model = RandomForestRegressor(
-            n_estimators=100,
+            n_estimators=500,
             max_depth=3,
-            min_samples_leaf=5,
+            min_samples_leaf=10,
             random_state=42
     )
     scoring = {'r2': 'r2', 'neg_mse': 'neg_mean_squared_error'}
@@ -304,7 +315,7 @@ def main():
     overall_r2 = r2_score(y, y_pred)
 
     importances = model.feature_importances_
-    _plot_feature_importance(importances)
+    print_feature_importance_table(importances)
     _plot_regression(y, y_pred, overall_r2)
 
 
