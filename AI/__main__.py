@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-# train_kawaii_geometry.py
+"""
+Early exploratory baseline — raw MediaPipe keypoints → Random Forest.
+Extracts (x, y) landmarks without normalization, derives a small feature vector
+(elbow/knee angles, arm-to-torso ratios, center of gravity), and trains a Random
+Forest to predict kawaii_mean from agg_phase2.csv.
+Predates the torso-normalized pipeline; kept as a reference for how much
+normalization matters.
+"""
 
 import logging
 from pathlib import Path

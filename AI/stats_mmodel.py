@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+CLI wrapper for the mixed-effects model (§4.4 / Equation 1).
+Accepts pre-computed ratings and feature CSVs as arguments, making it easy to
+re-run the LMM with different feature sets or data subsets without editing source.
+Implements the same model formula as pray.py but driven from the command line.
+
 Phase B: Join ratings with per-image geometry features and fit mixed-effects models.
 
 By default, uses *external* ratings only (Model != RaterID). You can switch to include

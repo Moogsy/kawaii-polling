@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CLIP + PCA + Ridge regression pipeline for predicting kawaii scores from images.
+Pixel-based baseline reported in §4.4.2.
+Embeds each pose image with CLIP ViT-B/32, reduces to 20 PCA components, and
+fits a Ridge regression with GroupKFold cross-validation grouped by performer.
+The paper reports R² ≈ −0.1 to −0.2, showing that raw pixel embeddings carry
+insufficient signal for this task and motivating the geometric descriptor approach.
 
 Requires: pip install git+https://github.com/openai/CLIP.git
 """

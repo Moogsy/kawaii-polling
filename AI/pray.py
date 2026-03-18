@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Statistical mixed-effects pipeline for pose geometry → ratings.
+Primary statistical model of the paper (§4.4 / Equation 1 / Tables 11–12).
+Implements the mixed-effects model:
+
+    Score ~ C(Category) + COG_Y + COG_X + Elbow_Min_Angle + Knee_Min_Angle
+            + R_Arm_Ratio + L_Arm_Ratio + Head_Tilt + Head_Rot
+            + (1 | RaterID) + (1 | Model) + (1 | ImageID)
+
+COG_Y (vertical center of gravity) is the only significant geometric predictor
+(β = 0.274, p = 0.007).  Outputs fixed-effect tables and summaries to
+mixedlm_outputs/.  Computes Nakagawa & Schielzeth marginal/conditional R².
+
 Replaces RF with LMM using the same MediaPipe keypoints & geometric features.
 
 Inputs

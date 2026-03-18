@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-# export_agg_scores.py
+"""
+Data preparation step (§3.1).
+Reads all external rating CSVs from ../Ratings/, removes self-ratings
+(rows where RaterID == Model), and computes the mean kawaii score for each
+(Category, Model) pair.  Saves the result to agg_phase2.csv, which is the
+shared input for the modelling scripts.
+"""
 
 import logging
 from pathlib import Path

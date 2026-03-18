@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Train a RandomForest on pose geometry features to predict kawaii scores.
+Normalized geometry pipeline → feature importance (§4.4 / Table 13).
+Landmarks are normalized to a torso-centered reference frame (translation, scale,
+and orientation invariance — §3.3) before feature extraction.  Person-level and
+pose-category biases are removed via residualization so the model captures
+geometry effects beyond performer identity.  A shallow, regularized Random Forest
+is trained; the resulting importances reproduce Table 13, with COG_Y (vertical
+center of gravity) ranking first.
 """
 import logging
 import os
